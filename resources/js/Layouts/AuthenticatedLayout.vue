@@ -20,7 +20,7 @@ const showingNavigationDropdown = ref(false);
             <Navigation/>
             <!-- Page Content -->
             <main class="flex-1">
-                <div class="px-3 flex items-center justify-between w-full" >
+                <div class="pr-4 flex items-center justify-between w-full" >
                     <SearchForm/>
                     <UserSettingsDropdown />
                 </div>

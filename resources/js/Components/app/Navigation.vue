@@ -1,7 +1,7 @@
 <template>
     <nav class="w-[300px]">
         <div class="h-[80px] px-3 flex items-center gap-3">
-            <Link :href="route('dashboard')">
+            <Link :href="route('myFiles')">
                 <ApplicationLogo
                     class="block h-9 w-auto fill-current text-gray-800"
                 />
@@ -12,14 +12,17 @@
             <CreateNewDropdown></CreateNewDropdown>
 
             <div class="py-3">
-                <NavLink href="/1">
+                <NavLink :href="route('myFiles')" :active="$page.url === '/my-files'">
                     My Files
                 </NavLink>
-                <NavLink href="/1" :active="true">
+                <NavLink :href="route('sharedWithMe')" :active="$page.url === '/shared-with-me'">
                     Shared with Me
                 </NavLink>
-                <NavLink href="/1">
-                    Starred Files
+                <NavLink :href="route('sharedByMe')" :active="$page.url === '/shared-by-me'">
+                    Shared by Me
+                </NavLink>
+                <NavLink :href="route('trash')"  :active="$page.url === '/trash'">
+                    Trash
                 </NavLink>
             </div>
 
