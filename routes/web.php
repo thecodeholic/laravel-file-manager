@@ -30,6 +30,8 @@ Route::controller(\App\Http\Controllers\FileController::class)->middleware(['aut
        Route::get('/shared-with-me', 'sharedWithMe')->name('sharedWithMe');
        Route::get('/shared-by-me', 'sharedByMe')->name('sharedByMe');
        Route::get('/trash', 'trash')->name('trash');
+
+       Route::post('/folder-create', 'createFolder')->name('folder.create');
     });
 //Route::get('/dashboard', function () {
 //    return Inertia::render('Dashboard');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFileRequest;
+use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\UpdateFileRequest;
 use App\Models\File;
 use Inertia\Inertia;
@@ -30,12 +31,17 @@ class FileController extends Controller
         return Inertia::render('File/MyFiles');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function createFolder(StoreFolderRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        $root = File::query()->where('_lft', '=', 1)->firstOrFail();
+
+        $folder = new File();
+        $folder->is_folder = true;
+        $folder->name = $data['name'];
+
+        $root->appendNode($folder);
     }
 
     /**
