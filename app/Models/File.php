@@ -48,4 +48,14 @@ class File extends Model
             }
         );
     }
+
+    public function isOwnedBy($userId): bool
+    {
+        return $this->created_by == $userId;
+    }
+
+    public function isRoot(): bool
+    {
+        return $this->_lft == 1;
+    }
 }

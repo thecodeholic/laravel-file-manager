@@ -12,15 +12,14 @@ use Inertia\Inertia;
 class FileController extends Controller
 {
 
-    public function myFiles(?File $folder)
+    public function myFiles(File $folder = null)
     {
-        if (!$folder->id) {
-            $folder = null;
+        if (!$folder) {
+            $folder = $this->getRoot();
         }
         $files = FileResource::collection(
             File::query()
-                ->where('_lft', '>', $folder?->_lft ?: 1)
-                ->where('_rgt', '<', $folder?->_rgt ?: PHP_INT_MAX)
+                ->where('parent_id', '=', $folder->id)
                 ->orderBy('created_at', 'desc')
                 ->paginate(50)
         );
@@ -50,13 +49,17 @@ class FileController extends Controller
     {
         $data = $request->validated();
 
-        $root = File::query()->where('_lft', '=', 1)->firstOrFail();
+        $parent = $request->parent;
+
+        if (!$parent) {
+            $parent = $this->getRoot();
+        }
 
         $folder = new File();
         $folder->is_folder = true;
         $folder->name = $data['name'];
 
-        $root->appendNode($folder);
+        $parent->appendNode($folder);
     }
 
     /**
@@ -97,5 +100,16 @@ class FileController extends Controller
     public function destroy(File $file)
     {
         //
+    }/**
+ * ${CARET}
+ *
+ * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
+ * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+ */
+    private function getRoot(): \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
+    {
+        $parent = File::query()->where('_lft', '=', 1)->firstOrFail();
+
+        return $parent;
     }
 }
