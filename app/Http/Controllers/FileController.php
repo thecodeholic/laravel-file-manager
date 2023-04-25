@@ -20,6 +20,7 @@ class FileController extends Controller
         $files = FileResource::collection(
             File::query()
                 ->where('parent_id', '=', $folder->id)
+                ->where('created_by', '=', request()->user()->id)
                 ->orderBy('created_at', 'desc')
                 ->paginate(50)
         );
@@ -100,16 +101,16 @@ class FileController extends Controller
     public function destroy(File $file)
     {
         //
-    }/**
- * ${CARET}
- *
- * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
- * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
- */
+    }
+
+    /**
+     *
+     *
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
+     * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+     */
     private function getRoot(): \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
     {
-        $parent = File::query()->where('_lft', '=', 1)->firstOrFail();
-
-        return $parent;
+        return File::query()->whereIsRoot()->where('created_by', '=', request()->user()->id)->firstOrFail();
     }
 }

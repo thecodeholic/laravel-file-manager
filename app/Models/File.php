@@ -56,6 +56,6 @@ class File extends Model
 
     public function isRoot(): bool
     {
-        return $this->_lft == 1;
+        return $this->parent_id === null;
     }
 }

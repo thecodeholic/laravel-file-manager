@@ -17,7 +17,7 @@ class StoreFolderRequest extends FormRequest
     public function authorize(): bool
     {
         $this->parent = File::where('id', $this->input('parent_id'))->first();
-        if ($this->parent && !$this->parent->isOwnedBy($this->user()->id)) {
+        if ($this->parent && !$this->parent->isRoot() && !$this->parent->isOwnedBy($this->user()->id)) {
             return false;
         }
         return true;
