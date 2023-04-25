@@ -18,6 +18,8 @@ return new class extends Migration
             '_lft' => 1,
             '_rgt' => 2,
             'is_folder' => 1,
+            'created_at' => \Carbon\Carbon::now(),
+            'updated_at' => \Carbon\Carbon::now(),
             'created_by' => 2,
             'updated_by' => 2
         ]); // Saved as root
