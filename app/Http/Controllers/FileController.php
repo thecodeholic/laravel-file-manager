@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\UpdateFileRequest;
+use App\Http\Resources\FileResource;
 use App\Models\File;
 use Inertia\Inertia;
 
@@ -13,7 +14,13 @@ class FileController extends Controller
 
     public function myFiles()
     {
-        return Inertia::render('File/MyFiles');
+        $files = FileResource::collection(
+            File::query()->where('_lft', '>', 1)
+            ->orderBy('created_at', 'desc')
+            ->paginate(50)
+        );
+
+        return Inertia::render('File/MyFiles', compact('files'));
     }
 
     public function sharedWithMe()
