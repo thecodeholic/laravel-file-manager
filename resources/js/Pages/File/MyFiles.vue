@@ -23,7 +23,7 @@
             <tr v-for="file of files.data" :key="file.id"
                 class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <Link :href="route('myFiles', {folder: file.slug})" class="flex items-center">
+                    <Link :href="route('myFiles', {folder: file.path})" class="flex items-center">
                         <span class="w-8 flex items-center justify-center mr-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                  stroke="currentColor" class="w-6 h-6">

@@ -7,13 +7,12 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 use Kalnoy\Nestedset\NodeTrait;
-use Spatie\Sluggable\HasSlug;
-use Spatie\Sluggable\SlugOptions;
 
 class File extends Model
 {
-    use HasFactory, HasSlug, HasCreatorAndUpdater, NodeTrait;
+    use HasFactory, HasCreatorAndUpdater, NodeTrait;
 
     protected $fillable = [
         'name',
@@ -25,25 +24,20 @@ class File extends Model
         'updated_by',
     ];
 
-    /**
-     * Get the options for generating the slug.
-     */
-    public function getSlugOptions() : SlugOptions
-    {
-        return SlugOptions::create()
-            ->generateSlugsFrom('name')
-            ->saveSlugsTo('slug');
-    }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function parent()
+    {
+        return $this->belongsTo(File::class);
+    }
+
     public function owner(): Attribute
     {
         return Attribute::make(
-            get: function(mixed $value, array $attributes) {
+            get: function (mixed $value, array $attributes) {
                 return $attributes['created_by'] === request()->user()->id ? "me" : $this->user->name;
             }
         );
@@ -57,5 +51,14 @@ class File extends Model
     public function isRoot(): bool
     {
         return $this->parent_id === null;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->path = (!$model->parent->isRoot() ? $model->parent->path . '/' : '') . Str::slug($model->name);
+        });
     }
 }
