@@ -58,6 +58,9 @@ class File extends Model
         parent::boot();
 
         static::creating(function ($model) {
+            if (!$model->parent) {
+                return;
+            }
             $model->path = (!$model->parent->isRoot() ? $model->parent->path . '/' : '') . Str::slug($model->name);
         });
     }
