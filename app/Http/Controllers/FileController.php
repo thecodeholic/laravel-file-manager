@@ -14,9 +14,11 @@ class FileController extends Controller
 
     public function myFiles(string $folder = null)
     {
-        $folder = File::where('created_by', '=', request()->user()->id)
-            ->where('path', '=', $folder)
-            ->firstOrFail();
+        if ($folder) {
+            $folder = File::where('created_by', '=', request()->user()->id)
+                ->where('path', '=', $folder)
+                ->firstOrFail();
+        }
 
         if (!$folder) {
             $folder = $this->getRoot();
