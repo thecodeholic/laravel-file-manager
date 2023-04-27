@@ -30,11 +30,14 @@ class FileController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(50)
         );
+
+        $ancestors = FileResource::collection([...$folder->ancestors, $folder]);
+
         if ($folder) {
             $folder = new FileResource($folder);
         }
 
-        return Inertia::render('File/MyFiles', compact('files', 'folder'));
+        return Inertia::render('File/MyFiles', compact('files', 'folder', 'ancestors'));
     }
 
     public function sharedWithMe()
