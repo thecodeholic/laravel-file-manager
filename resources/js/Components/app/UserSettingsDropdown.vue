@@ -1,7 +1,7 @@
 <template>
     <Menu as="div" class="relative block text-left">
         <MenuButton
-            class="flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            class="flex w-full justify-center items-center gap-x-1.5 rounded-md bg-white px-3 py-2 font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
             {{ $page.props.auth.user.name }}
             <svg
                 class="ml-2 -mr-0.5 h-4 w-4"

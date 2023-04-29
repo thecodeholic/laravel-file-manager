@@ -2,7 +2,7 @@
     <form class="w-[600px] h-[80px] flex items-center">
         <TextInput
             type="text"
-            class="mt-1 block w-full"
+            class="block w-full mr-2"
             v-model="form.search"
             autocomplete="search"
             placeholder="Search for files and folders"
