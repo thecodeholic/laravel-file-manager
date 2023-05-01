@@ -2,18 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Models\File;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreFileRequest extends FormRequest
+class StoreFileRequest extends StoreFolderRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,7 +17,13 @@ class StoreFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'files.*' => ['required', 'file'],
+            'folder_name' => ['string'],
+            'parent_id' => [
+                Rule::exists(File::class, 'id')->where(function (Builder $query) {
+                    return $query->where('is_folder', '=', 1);
+                }),
+            ]
         ];
     }
 }

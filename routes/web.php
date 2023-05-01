@@ -33,6 +33,7 @@ Route::controller(\App\Http\Controllers\FileController::class)->middleware(['aut
        Route::get('/trash', 'trash')->name('trash');
 
        Route::post('/folder-create', 'createFolder')->name('folder.create');
+       Route::post('/upload', 'store')->name('file.upload');
     });
 //Route::get('/dashboard', function () {
 //    return Inertia::render('Dashboard');
