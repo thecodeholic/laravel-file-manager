@@ -52,7 +52,7 @@
                 class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <Link :href="route('myFiles', {folder: file.path})" class="flex items-center">
-                        <FileIcon :file="file" />
+                        <FileIcon :file="file"/>
                         {{ file.name }}
                     </Link>
                 </td>
@@ -75,7 +75,7 @@
 <script setup>
 import {Link, router, usePage} from '@inertiajs/vue3';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import {onMounted, ref} from "vue";
+import {onMounted, onUpdated, ref, watch} from "vue";
 import FileIcon from "@/Components/app/FileIcon.vue";
 
 const {get} = usePage();
@@ -89,10 +89,16 @@ const props = defineProps({
 })
 
 const loadMoreIntersect = ref(null)
-
 const allFiles = ref({
     data: props.files.data,
     next: props.files.links.next
+})
+
+onUpdated(() => {
+    allFiles.value = {
+        data: props.files.data,
+        next: props.files.links.next
+    }
 })
 
 onMounted(() => {
