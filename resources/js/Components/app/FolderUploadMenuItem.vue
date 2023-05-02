@@ -1,6 +1,7 @@
 <template>
     <MenuItem v-slot="{ active }">
         <a href="#"
+           class="relative"
            :class="[active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">
             Folder Upload
             <input type="file" @change="onFileUploadChange" webkitdirectory directory
