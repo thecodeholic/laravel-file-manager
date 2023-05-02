@@ -95,39 +95,35 @@ const props = defineProps({
 
 const loadMoreIntersect = ref(null)
 
-const allFiles = ref(props.files)
+const allFiles = ref({
+    data: props.files.data,
+    next: props.files.links.next
+})
 
 onMounted(() => {
     const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && loadMore(), {
         rootMargin: "-150px 0px 0px 0px"
     }));
 
-    console.log(loadMoreIntersect);
     observer.observe(loadMoreIntersect.value)
 })
 
 
 function loadMore() {
-    if (props.files.next_page_url === null) {
+    if (allFiles.value.next === null) {
         return
     }
 
-    console.log(props.files.links);
-    fetch(props.files.links.next, {}, {
-        // preserveState: true,
-        // preserveScroll: true,
-        // only: ['files'],
-        // onSuccess: () => {
-        //     allFiles.value = [...allFiles.value, ...props.files.data]
-        // }
+    fetch(allFiles.value.next, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
     })
-        .then(response => {
-            console.log(response);
-            return response.text();
-        })
+        .then(response => response.json())
         .then(res => {
-            console.log(res);
-            // allFiles.value = [...allFiles.value, ...props.files.data]
+            allFiles.value.data = [...allFiles.value.data, ...res.data]
+            allFiles.value.next = res.links.next
         })
 }
 

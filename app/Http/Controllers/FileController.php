@@ -7,12 +7,13 @@ use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\UpdateFileRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FileController extends Controller
 {
 
-    public function myFiles(string $folder = null)
+    public function myFiles(Request $request, string $folder = null)
     {
         if ($folder) {
             $folder = File::where('created_by', '=', request()->user()->id)
@@ -30,6 +31,10 @@ class FileController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(10)
         );
+
+        if ($request->wantsJson()) {
+            return $files;
+        }
 
         $ancestors = FileResource::collection([...$folder->ancestors, $folder]);
 
