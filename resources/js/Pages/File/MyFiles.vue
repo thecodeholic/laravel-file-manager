@@ -22,8 +22,8 @@
                                   clip-rule="evenodd"></path>
                         </svg>
                         <Link :href="route('myFiles', {folder: ans.path})"
-                           class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2 dark:text-gray-400 dark:hover:text-white">
-                            {{ans.name}}
+                              class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2 dark:text-gray-400 dark:hover:text-white">
+                            {{ ans.name }}
                         </Link>
                     </div>
                 </li>
@@ -48,7 +48,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="file of files.data" :key="file.id"
+            <tr v-for="file of allFiles.data" :key="file.id"
                 class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <Link :href="route('myFiles', {folder: file.path})" class="flex items-center">
@@ -71,21 +71,65 @@
             </tr>
             </tbody>
         </table>
-        <div v-if="!files.data.length" class="py-8 text-center text-lg text-gray-400">
+        <div v-if="!allFiles.data.length" class="py-8 text-center text-lg text-gray-400">
             There is no data in this folder
         </div>
+        <div ref="loadMoreIntersect"></div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
-import {Link} from '@inertiajs/vue3';
+import {Link, router, usePage} from '@inertiajs/vue3';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import {onMounted, ref} from "vue";
+
+const {get} = usePage();
+
+const page = usePage();
 
 const props = defineProps({
     files: Object,
     folder: Object,
     ancestors: Object
 })
+
+const loadMoreIntersect = ref(null)
+
+const allFiles = ref(props.files)
+
+onMounted(() => {
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && loadMore(), {
+        rootMargin: "-150px 0px 0px 0px"
+    }));
+
+    console.log(loadMoreIntersect);
+    observer.observe(loadMoreIntersect.value)
+})
+
+
+function loadMore() {
+    if (props.files.next_page_url === null) {
+        return
+    }
+
+    console.log(props.files.links);
+    fetch(props.files.links.next, {}, {
+        // preserveState: true,
+        // preserveScroll: true,
+        // only: ['files'],
+        // onSuccess: () => {
+        //     allFiles.value = [...allFiles.value, ...props.files.data]
+        // }
+    })
+        .then(response => {
+            console.log(response);
+            return response.text();
+        })
+        .then(res => {
+            console.log(res);
+            // allFiles.value = [...allFiles.value, ...props.files.data]
+        })
+}
 
 </script>
 
