@@ -108,6 +108,8 @@ class FileController extends Controller
             $model->storage_path = $path;
             $model->is_folder = false;
             $model->name = $file->getClientOriginalName();
+            $model->mime = $file->getMimeType();
+            $model->size = $file->getSize();
 
             $parent->appendNode($model);
         }
