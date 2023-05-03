@@ -52,10 +52,10 @@
                 <tr v-for="file of allFiles.data" :key="file.id"
                     class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <Link :href="route('myFiles', {folder: file.path})" class="flex items-center">
+                        <a href="#" @dblclick.prevent="openFolder(file)" class="flex items-center">
                             <FileIcon :file="file"/>
                             {{ file.name }}
-                        </Link>
+                        </a>
                     </td>
                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ file.owner }}</td>
                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{
@@ -96,21 +96,13 @@ const allFiles = ref({
     next: props.files.links.next
 })
 
-onUpdated(() => {
-    allFiles.value = {
-        data: props.files.data,
-        next: props.files.links.next
+function openFolder(file) {
+    if (!file.is_folder) {
+        return
     }
-})
 
-onMounted(() => {
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && loadMore(), {
-        rootMargin: "-250px 0px 0px 0px"
-    }));
-
-    observer.observe(loadMoreIntersect.value)
-})
-
+    router.visit(route('myFiles', {folder: file.path}))
+}
 
 function loadMore() {
     if (allFiles.value.next === null) {
@@ -130,6 +122,20 @@ function loadMore() {
         })
 }
 
+onUpdated(() => {
+    allFiles.value = {
+        data: props.files.data,
+        next: props.files.links.next
+    }
+})
+
+onMounted(() => {
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && loadMore(), {
+        rootMargin: "-250px 0px 0px 0px"
+    }));
+
+    observer.observe(loadMoreIntersect.value)
+})
 </script>
 
 <style scoped>
