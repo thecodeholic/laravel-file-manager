@@ -55,7 +55,7 @@ function handleDrop(event) {
                     <SearchForm/>
                     <UserSettingsDropdown/>
                 </div>
-                <div class="flex-1 overflow-auto">
+                <div class="flex-1 flex flex-col overflow-hidden">
                     <slot/>
                 </div>
             </template>
