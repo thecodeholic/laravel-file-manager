@@ -34,6 +34,10 @@
             <table class="min-w-full">
                 <thead class="bg-gray-100 border-b">
                 <tr>
+                    <th scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left w-[30px] max-w-[30px] pr-0">
+                        <Checkbox @change="onDeleteAllChange" v-model:checked="deleteAll"/>
+                    </th>
                     <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
                         Name
                     </th>
@@ -50,7 +54,13 @@
                 </thead>
                 <tbody>
                 <tr v-for="file of allFiles.data" :key="file.id"
-                    class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
+                    @click="toggleFileSelect(file)"
+                    class="bg-white border-b transition duration-300 ease-in-out hover:bg-blue-100"
+                    :class="(toBeDeleted[file.id] || deleteAll) ? 'bg-blue-50' : ''">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 pr-0">
+                        <Checkbox @change="onDeleteChange(file)" v-model="toBeDeleted[file.id]"
+                                  :checked="toBeDeleted[file.id] || deleteAll"/>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <a href="#" @dblclick.prevent="openFolder(file)" class="flex items-center">
                             <FileIcon :file="file"/>
@@ -79,8 +89,10 @@ import {Link, router, usePage} from '@inertiajs/vue3';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import {onMounted, onUpdated, ref, watch} from "vue";
 import FileIcon from "@/Components/app/FileIcon.vue";
+import Checkbox from "@/Components/Checkbox.vue";
 
-const {get} = usePage();
+const deleteAll = ref(false)
+const toBeDeleted = ref({})
 
 const page = usePage();
 
@@ -119,7 +131,34 @@ function loadMore() {
         .then(res => {
             allFiles.value.data = [...allFiles.value.data, ...res.data]
             allFiles.value.next = res.links.next
+            onDeleteAllChange()
         })
+}
+
+function onDeleteAllChange() {
+    allFiles.value.data.forEach(f => {
+        toBeDeleted.value[f.id] = deleteAll.value;
+    })
+}
+
+function toggleFileSelect(file) {
+    toBeDeleted.value[file.id] = !toBeDeleted.value[file.id]
+    onDeleteChange(file)
+}
+
+function onDeleteChange(file) {
+    if (!toBeDeleted.value[file.id]) {
+        deleteAll.value = false;
+    } else {
+        let checked = true;
+        for (let id in toBeDeleted.value) {
+            if (!toBeDeleted.value[id]) {
+                checked = false;
+                break;
+            }
+        }
+        deleteAll.value = checked;
+    }
 }
 
 onUpdated(() => {
