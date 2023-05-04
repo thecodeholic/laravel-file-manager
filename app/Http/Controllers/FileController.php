@@ -28,6 +28,7 @@ class FileController extends Controller
             File::query()
                 ->where('parent_id', '=', $folder->id)
                 ->where('created_by', '=', request()->user()->id)
+                ->orderBy('is_folder', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->paginate(10)
         );
