@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DestroyFilesRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\UpdateFileRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class FileController extends Controller
@@ -118,22 +121,6 @@ class FileController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(File $file)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(File $file)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(UpdateFileRequest $request, File $file)
@@ -144,9 +131,24 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(File $file)
+    public function destroy(DestroyFilesRequest $request)
     {
-        //
+        $data = $request->validated();
+        $parent = $request->parent;
+
+        if ($data['delete_all']) {
+            $children = $parent->children;
+
+            foreach ($children as $child) {
+                $child->delete();
+            }
+        }
+        foreach (($data['delete_ids'] ?? []) as $id) {
+            $file = File::find($id);
+            $file->delete();
+        }
+
+        return to_route('myFiles', ['folder' => $parent->path]);
     }
 
     /**
