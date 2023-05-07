@@ -30,6 +30,9 @@ function onDragLeave() {
 function handleDrop(event) {
     dragOver.value = false;
     const files = event.dataTransfer.files;
+    if (!files.length) {
+        return;
+    }
 
     fileUploadForm.parent_id = page.props.folder?.id;
     fileUploadForm.files = files
