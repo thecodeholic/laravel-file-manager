@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\DestroyFilesRequest;
+use App\Http\Requests\FilesActionRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\UpdateFileRequest;
@@ -131,19 +131,19 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(DestroyFilesRequest $request)
+    public function destroy(FilesActionRequest $request)
     {
         $data = $request->validated();
         $parent = $request->parent;
 
-        if ($data['delete_all']) {
+        if ($data['all']) {
             $children = $parent->children;
 
             foreach ($children as $child) {
                 $child->delete();
             }
         }
-        foreach (($data['delete_ids'] ?? []) as $id) {
+        foreach (($data['ids'] ?? []) as $id) {
             $file = File::find($id);
             $file->delete();
         }

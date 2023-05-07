@@ -7,8 +7,10 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class DestroyFilesRequest extends StoreFolderRequest
+class ParentIdBaseRequest extends FormRequest
 {
+    public ?File $parent = null;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -22,24 +24,17 @@ class DestroyFilesRequest extends StoreFolderRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
-     */
     public function rules(): array
     {
         $user = $this->user();
+
         return [
             'parent_id' => [
-                Rule::exists(File::class, 'id')->where(function (Builder $query) {
-                    return $query->where('is_folder', '=', 1);
-                }),
-            ],
-            'delete_all' => 'nullable|bool',
-            'delete_ids.*' => Rule::exists('files', 'id')->where(function ($query) use ($user) {
-                $query->where('created_by', $user->id);
-            }),
+                Rule::exists(File::class, 'id')
+                    ->where(function (Builder $query) use ($user) {
+                        return $query->where('is_folder', '=', 1)->where('created_by', '=', $user->id);
+                    }),
+            ]
         ];
     }
 }

@@ -26,8 +26,8 @@ import {useForm, usePage} from "@inertiajs/vue3";
 // Uses
 const page = usePage()
 const deleteFilesForm = useForm({
-    delete_all: null,
-    delete_ids: [],
+    all: null,
+    ids: [],
     parent_id: null,
 })
 
@@ -45,6 +45,7 @@ const props = defineProps({
         required: false
     }
 })
+const emit = defineEmits(['deleted'])
 
 // Methods
 function onDeleteClick() {
@@ -56,16 +57,16 @@ function onDeleteCancel() {
 }
 
 function onDeleteConfirm() {
-    console.log('Deleting ', page.props, props.deleteIds);
     deleteFilesForm.parent_id = page.props.folder?.id;
     if (props.deleteAll) {
-        deleteFilesForm.delete_all = props.deleteAll;
+        deleteFilesForm.all = props.deleteAll;
     } else {
-        deleteFilesForm.delete_ids = props.deleteIds;
+        deleteFilesForm.ids = props.deleteIds;
     }
     deleteFilesForm.delete(route('file.delete'), {
         onSuccess: () => {
             showDeleteDialog.value = false;
+            emit('deleted');
         }
     })
 }
