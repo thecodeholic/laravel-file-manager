@@ -30,7 +30,7 @@
             </ol>
 
             <div class="inline-flex rounded-md shadow-sm" role="group">
-                <DownloadFilesButton :all="allSelected" :ids="selectedIds" class="mr-2" />
+                <DownloadFilesButton :disabled="!allSelected && !selectedIds.length" :all="allSelected" :ids="selectedIds" class="mr-2" />
                 <DeleteFilesButton :delete-all="allSelected" :delete-ids="selectedIds" @deleted="onDeleted" />
             </div>
 
@@ -99,6 +99,7 @@ import Checkbox from "@/Components/Checkbox.vue";
 import ConfirmationDialog from "@/Components/ConfirmationDialog.vue";
 import DeleteFilesButton from "@/Components/app/DeleteFilesButton.vue";
 import DownloadFilesButton from "@/Components/app/DownloadFilesButton.vue";
+import {httpGet} from "@/Helpers/http-helper.js";
 
 // Uses
 const page = usePage();
@@ -136,13 +137,7 @@ function loadMore() {
         return
     }
 
-    fetch(allFiles.value.next, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-    })
-        .then(response => response.json())
+    httpGet(allFiles.value.next)
         .then(res => {
             allFiles.value.data = [...allFiles.value.data, ...res.data]
             allFiles.value.next = res.links.next
