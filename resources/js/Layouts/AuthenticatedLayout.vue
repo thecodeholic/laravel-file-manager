@@ -10,6 +10,7 @@ import TextInput from "@/Components/TextInput.vue";
 import SearchForm from "@/Components/app/SearchForm.vue";
 import Navigation from "@/Components/app/Navigation.vue";
 import UserSettingsDropdown from "@/Components/app/UserSettingsDropdown.vue";
+import ErrorDialog from "@/Components/ErrorDialog.vue";
 
 const page = usePage();
 const dragOver = ref(false);
@@ -64,6 +65,8 @@ function handleDrop(event) {
             </template>
         </main>
     </div>
+
+    <ErrorDialog />
 </template>
 
 <style lang="css">

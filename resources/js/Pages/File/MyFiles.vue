@@ -29,7 +29,7 @@
                 </li>
             </ol>
 
-            <div class="inline-flex rounded-md shadow-sm" role="group">
+            <div class="inline-flex" role="group">
                 <DownloadFilesButton :disabled="!allSelected && !selectedIds.length" :all="allSelected" :ids="selectedIds" class="mr-2" />
                 <DeleteFilesButton :delete-all="allSelected" :delete-ids="selectedIds" @deleted="onDeleted" />
             </div>
