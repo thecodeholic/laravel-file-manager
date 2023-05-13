@@ -14,6 +14,7 @@
                     ref="folderNameInput"
                     v-model="form.name"
                     class="mt-1 block w-full"
+                    :class="form.errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''"
                     placeholder="Folder Name"
                     @keyup.enter="createFolder"
                 />
@@ -73,15 +74,18 @@ const createFolder = () => {
     form.parent_id = page.props.folder?.id;
     form.post(route('folder.create'), {
         preserveScroll: true,
-        onSuccess: () => closeModal(),
+        onSuccess: () => {
+            closeModal()
+            form.reset()
+        },
         onError: () => folderNameInput.value.focus(),
-        onFinish: () => form.reset(),
     });
 };
 
 const closeModal = () => {
     emit('update:modelValue', false)
 
+    form.clearErrors()
     form.reset();
 };
 

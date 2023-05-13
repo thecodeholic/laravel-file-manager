@@ -16,11 +16,25 @@ class StoreFolderRequest extends ParentIdBaseRequest
      */
     public function rules(): array
     {
+        $user = $this->user();
+
         return array_merge(
             parent::rules(),
             [
-                'name' => 'required',
+                'name' => [
+                    'required',
+                    Rule::unique('files', 'name')
+                        ->where('created_by', $user->id)
+                        ->where('parent_id', $this->parent_id)
+                ],
             ]
         );
+    }
+
+    public function messages()
+    {
+        return [
+            'name.unique' => 'Folder ":input" already exists'
+        ];
     }
 }

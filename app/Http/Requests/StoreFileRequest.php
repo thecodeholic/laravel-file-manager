@@ -16,10 +16,26 @@ class StoreFileRequest extends ParentIdBaseRequest
      */
     public function rules(): array
     {
+        $user = $this->user();
+
         return array_merge(
             parent::rules(),
             [
-                'files.*' => ['required', 'file'],
+                'files.*' => [
+                    'required',
+                    'file',
+                    function ($attribute, $value, $fail) use ($user) {
+                        // Check if the file's original name is unique in the database
+                        $file = File::query()->where('name', $value->getClientOriginalName())
+                            ->where('created_by', $user->id)
+                            ->where('parent_id', $this->parent_id)
+                            ->exists();
+
+                        if ($file) {
+                            $fail('File "' . $value->getClientOriginalName() . '" already exists.');
+                        }
+                    },
+                ],
                 'folder_name' => ['string'],
             ]
         );
