@@ -63,7 +63,7 @@
                 <tr v-for="file of allFiles.data" :key="file.id"
                     @click="toggleFileSelect(file)"
                     @dblclick.prevent="openFolder(file)"
-                    class="border-b transition duration-300 ease-in-out hover:bg-blue-100"
+                    class="border-b transition duration-300 ease-in-out hover:bg-blue-100 cursor-pointer"
                     :class="(selected[file.id] || allSelected) ? 'bg-blue-50' : 'bg-white'">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 pr-0">
                         <Checkbox @change="onSelectCheckboxChange(file)" v-model="selected[file.id]"
