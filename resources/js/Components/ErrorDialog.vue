@@ -15,7 +15,7 @@
 // Imports
 import Modal from "@/Components/Modal.vue";
 import {onMounted, ref} from "vue";
-import {emitter} from "@/event-bus.js";
+import {emitter, SHOW_ERROR_DIALOG} from "@/event-bus.js";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 // Uses
 
@@ -36,7 +36,7 @@ function close() {
 // Hooks
 
 onMounted(() => {
-    emitter.on('show-error-dialog', ({message: msg}) => {
+    emitter.on(SHOW_ERROR_DIALOG, ({message: msg}) => {
         show.value = true
         message.value = msg
     })

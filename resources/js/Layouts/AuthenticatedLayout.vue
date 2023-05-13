@@ -1,47 +1,3 @@
-<script setup>
-import {ref} from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import {Link, useForm, usePage} from '@inertiajs/vue3';
-import TextInput from "@/Components/TextInput.vue";
-import SearchForm from "@/Components/app/SearchForm.vue";
-import Navigation from "@/Components/app/Navigation.vue";
-import UserSettingsDropdown from "@/Components/app/UserSettingsDropdown.vue";
-import ErrorDialog from "@/Components/ErrorDialog.vue";
-
-const page = usePage();
-const dragOver = ref(false);
-
-const fileUploadForm = useForm({
-    files: [],
-    parent_id: null
-})
-
-function onDragOver() {
-    dragOver.value = true
-}
-
-function onDragLeave() {
-    dragOver.value = false
-}
-
-function handleDrop(event) {
-    dragOver.value = false;
-    const files = event.dataTransfer.files;
-    if (!files.length) {
-        return;
-    }
-
-    fileUploadForm.parent_id = page.props.folder?.id;
-    fileUploadForm.files = files
-    fileUploadForm.post(route('file.upload'))
-}
-
-</script>
-
 <template>
     <div class="h-screen bg-gray-50 flex w-full gap-4">
         <Navigation/>
@@ -66,8 +22,68 @@ function handleDrop(event) {
         </main>
     </div>
 
-    <ErrorDialog />
+    <ErrorDialog/>
+    <FormProgress :form="fileUploadForm" />
 </template>
+
+<script setup>
+import {onMounted, ref} from 'vue';
+import {useForm, usePage} from '@inertiajs/vue3';
+import SearchForm from "@/Components/app/SearchForm.vue";
+import Navigation from "@/Components/app/Navigation.vue";
+import UserSettingsDropdown from "@/Components/app/UserSettingsDropdown.vue";
+import ErrorDialog from "@/Components/ErrorDialog.vue";
+import {emitter, showErrorDialog, FILE_UPLOAD_STARTED} from "@/event-bus.js";
+import FormProgress from "@/Components/FormProgress.vue";
+
+const page = usePage();
+const dragOver = ref(false);
+
+const fileUploadForm = useForm({
+    files: [],
+    parent_id: null
+})
+
+function onDragOver() {
+    dragOver.value = true
+}
+
+function onDragLeave() {
+    dragOver.value = false
+}
+
+function handleDrop(event) {
+    dragOver.value = false;
+    const files = event.dataTransfer.files;
+    if (!files.length) {
+        return;
+    }
+
+    uploadFiles(files)
+}
+
+function uploadFiles(files) {
+    fileUploadForm.parent_id = page.props.folder?.id;
+    fileUploadForm.files = files
+
+    fileUploadForm.post(route('file.upload'), {
+        onError: errors => {
+            let message = '';
+            if (Object.keys(errors).length > 0) {
+                message = errors[Object.keys(errors)[0]]
+            } else {
+                message = 'Error during file upload. Please try again later'
+            }
+            showErrorDialog(message)
+        },
+    })
+}
+
+// Hooks
+onMounted(() => {
+    emitter.on(FILE_UPLOAD_STARTED, uploadFiles)
+})
+</script>
 
 <style lang="css">
 .dropzone {

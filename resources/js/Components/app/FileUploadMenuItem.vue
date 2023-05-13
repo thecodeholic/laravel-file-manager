@@ -13,16 +13,11 @@
 <script setup>
 // Imports
 import {MenuItem} from "@headlessui/vue";
-import {useForm, usePage} from "@inertiajs/vue3";
-import {showErrorDialog} from "@/event-bus.js";
+import {usePage} from "@inertiajs/vue3";
+import {emitter, FILE_UPLOAD_STARTED} from "@/event-bus.js";
 
 // Uses
 const page = usePage()
-
-const fileUploadForm = useForm({
-    files: [],
-    parent_id: null
-})
 
 // Refs
 
@@ -30,19 +25,7 @@ const fileUploadForm = useForm({
 
 // Methods
 function onFileUploadChange(ev) {
-    fileUploadForm.parent_id = page.props.folder?.id;
-    fileUploadForm.files = ev.target.files
-    fileUploadForm.post(route('file.upload'), {
-        onError: errors => {
-            let message = '';
-            if (Object.keys(errors).length > 0) {
-                message = errors[Object.keys(errors)[0]]
-            } else {
-                message = 'Error during file upload. Please try again later'
-            }
-            showErrorDialog(message)
-        },
-    })
+    emitter.emit(FILE_UPLOAD_STARTED, ev.target.files)
 }
 
 // Hooks
