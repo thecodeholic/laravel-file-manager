@@ -25,19 +25,38 @@ class StoreFileRequest extends ParentIdBaseRequest
                     'required',
                     'file',
                     function ($attribute, $value, $fail) use ($user) {
-                        // Check if the file's original name is unique in the database
-                        $file = File::query()->where('name', $value->getClientOriginalName())
-                            ->where('created_by', $user->id)
-                            ->where('parent_id', $this->parent_id)
-                            ->whereNull('deleted_at')
-                            ->exists();
-
-                        if ($file) {
-                            $fail('File "' . $value->getClientOriginalName() . '" already exists.');
+                        // If we are uploading files not a folder
+                        if (!$this->folder_name) {
+                            // Check if the file's original name is unique in the database
+                            $file = File::query()->where('name', $value->getClientOriginalName())
+                                ->where('created_by', $user->id)
+                                ->where('parent_id', $this->parent_id)
+                                ->whereNull('deleted_at')
+                                ->exists();
+                            if ($file) {
+                                $fail('File "' . $value->getClientOriginalName() . '" already exists.');
+                            }
                         }
                     },
                 ],
-                'folder_name' => ['string'],
+                'folder_name' => [
+                    'nullable',
+                    'string',
+                    function ($attribute, $value, $fail) use ($user) {
+                        // If we are uploading files not a folder
+                        if ($this->folder_name) {
+                            // Check if the file's original name is unique in the database
+                            $file = File::query()->where('name', $value)
+                                ->where('created_by', $user->id)
+                                ->where('parent_id', $this->parent_id)
+                                ->whereNull('deleted_at')
+                                ->exists();
+                            if ($file) {
+                                $fail('Folder "' . $value . '" already exists.');
+                            }
+                        }
+                    },
+                ],
             ]
         );
     }
