@@ -22,6 +22,7 @@
 import {ref} from "vue";
 import ConfirmationDialog from "@/Components/ConfirmationDialog.vue";
 import {useForm, usePage} from "@inertiajs/vue3";
+import {showErrorDialog} from "@/event-bus.js";
 
 // Uses
 const page = usePage()
@@ -49,6 +50,10 @@ const emit = defineEmits(['deleted'])
 
 // Methods
 function onDeleteClick() {
+    if (!props.deleteAll && !props.deleteIds.length) {
+        showErrorDialog('Please select at least one file to delete')
+        return
+    }
     showDeleteDialog.value = true;
 }
 
