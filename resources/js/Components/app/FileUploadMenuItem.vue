@@ -25,7 +25,7 @@ const page = usePage()
 
 // Methods
 function onFileUploadChange(ev) {
-    emitter.emit(FILE_UPLOAD_STARTED, ev.target.files)
+    emitter.emit(FILE_UPLOAD_STARTED, {files: ev.target.files})
 }
 
 // Hooks

@@ -23,7 +23,8 @@
     </div>
 
     <ErrorDialog/>
-    <FormProgress :form="fileUploadForm" />
+    <FormProgress :form="fileUploadForm"/>
+    <Notification/>
 </template>
 
 <script setup>
@@ -33,14 +34,21 @@ import SearchForm from "@/Components/app/SearchForm.vue";
 import Navigation from "@/Components/app/Navigation.vue";
 import UserSettingsDropdown from "@/Components/app/UserSettingsDropdown.vue";
 import ErrorDialog from "@/Components/ErrorDialog.vue";
-import {emitter, showErrorDialog, FILE_UPLOAD_STARTED} from "@/event-bus.js";
+import {
+    emitter,
+    showErrorDialog,
+    FILE_UPLOAD_STARTED,
+    showSuccessNotification
+} from "@/event-bus.js";
 import FormProgress from "@/Components/FormProgress.vue";
+import Notification from "@/Components/Notification.vue";
 
 const page = usePage();
 const dragOver = ref(false);
 
 const fileUploadForm = useForm({
     files: [],
+    folder_name: '',
     parent_id: null
 })
 
@@ -59,14 +67,20 @@ function handleDrop(event) {
         return;
     }
 
-    uploadFiles(files)
+    uploadFiles({files})
 }
 
-function uploadFiles(files) {
+function uploadFiles({files, folder_name = null}) {
     fileUploadForm.parent_id = page.props.folder?.id;
+    if (folder_name) {
+        fileUploadForm.folder_name = folder_name;
+    }
     fileUploadForm.files = files
 
     fileUploadForm.post(route('file.upload'), {
+        onSuccess: () => {
+            showSuccessNotification('Successfully uploaded')
+        },
         onError: errors => {
             let message = '';
             if (Object.keys(errors).length > 0) {
@@ -76,6 +90,10 @@ function uploadFiles(files) {
             }
             showErrorDialog(message)
         },
+        onFinish: () => {
+            fileUploadForm.clearErrors()
+            fileUploadForm.reset()
+        }
     })
 }
 

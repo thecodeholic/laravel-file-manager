@@ -12,22 +12,16 @@
 
 <script setup>
 import {MenuItem} from "@headlessui/vue";
-import {useForm, usePage} from "@inertiajs/vue3";
+import {usePage} from "@inertiajs/vue3";
+import {emitter, FILE_UPLOAD_STARTED} from "@/event-bus.js";
 
 const page = usePage()
 
-const folderUploadForm = useForm({
-    files: [],
-    folder_name: null,
-    parent_id: null
-})
-
 function onFileUploadChange(ev) {
-    folderUploadForm.parent_id = page.props.folder?.id;
-    folderUploadForm.files = ev.target.files
-    console.log(folderUploadForm.files);
-    folderUploadForm.folder_name = ev.target.files[0].webkitRelativePath.split('/')[0];
-    folderUploadForm.post(route('file.upload'))
+    emitter.emit(FILE_UPLOAD_STARTED, {
+        files: ev.target.files,
+        folder_name: ev.target.files[0].webkitRelativePath.split('/')[0]
+    })
 }
 </script>
 

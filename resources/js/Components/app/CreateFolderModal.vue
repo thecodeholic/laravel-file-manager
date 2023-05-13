@@ -45,9 +45,10 @@ import InputError from "@/Components/InputError.vue";
 import TextInput from "@/Components/TextInput.vue";
 import Modal from "@/Components/Modal.vue";
 import {useForm} from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3'
+import {usePage} from '@inertiajs/vue3'
 import {nextTick, ref} from 'vue';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import {showSuccessNotification} from "@/event-bus.js";
 
 // Uses
 const page = usePage()
@@ -77,6 +78,7 @@ const createFolder = () => {
         onSuccess: () => {
             closeModal()
             form.reset()
+            showSuccessNotification('Folder Created')
         },
         onError: () => folderNameInput.value.focus(),
     });
