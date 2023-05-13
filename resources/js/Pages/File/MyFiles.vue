@@ -30,8 +30,9 @@
             </ol>
 
             <div class="inline-flex" role="group">
-                <DownloadFilesButton :disabled="!allSelected && !selectedIds.length" :all="allSelected" :ids="selectedIds" class="mr-2" />
-                <DeleteFilesButton :delete-all="allSelected" :delete-ids="selectedIds" @deleted="onDeleted" />
+                <DownloadFilesButton :disabled="!allSelected && !selectedIds.length" :all="allSelected"
+                                     :ids="selectedIds" class="mr-2"/>
+                <DeleteFilesButton :delete-all="allSelected" :delete-ids="selectedIds" @deleted="onDeleted"/>
             </div>
 
         </nav>
@@ -61,17 +62,16 @@
                 <tbody>
                 <tr v-for="file of allFiles.data" :key="file.id"
                     @click="toggleFileSelect(file)"
+                    @dblclick.prevent="openFolder(file)"
                     class="border-b transition duration-300 ease-in-out hover:bg-blue-100"
                     :class="(selected[file.id] || allSelected) ? 'bg-blue-50' : 'bg-white'">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 pr-0">
                         <Checkbox @change="onSelectCheckboxChange(file)" v-model="selected[file.id]"
                                   :checked="selected[file.id] || allSelected"/>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <a href="#" @dblclick.prevent="openFolder(file)" class="flex items-center">
-                            <FileIcon :file="file"/>
-                            {{ file.name }}
-                        </a>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
+                        <FileIcon :file="file"/>
+                        {{ file.name }}
                     </td>
                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ file.owner }}</td>
                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{
@@ -172,7 +172,7 @@ function onSelectCheckboxChange(file) {
     }
 }
 
-function onDeleted(){
+function onDeleted() {
     allSelected.value = false;
     selected.value = {};
 }
