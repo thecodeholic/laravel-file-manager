@@ -26,6 +26,7 @@ class StoreFolderRequest extends ParentIdBaseRequest
                     Rule::unique('files', 'name')
                         ->where('created_by', $user->id)
                         ->where('parent_id', $this->parent_id)
+                        ->whereNull('deleted_at')
                 ],
             ]
         );

@@ -29,6 +29,7 @@ class StoreFileRequest extends ParentIdBaseRequest
                         $file = File::query()->where('name', $value->getClientOriginalName())
                             ->where('created_by', $user->id)
                             ->where('parent_id', $this->parent_id)
+                            ->whereNull('deleted_at')
                             ->exists();
 
                         if ($file) {
