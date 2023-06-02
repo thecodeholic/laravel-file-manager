@@ -16,7 +16,6 @@
         </div>
     </transition>
 </template>
-
 <script setup>
 // Imports
 import {onMounted, ref} from "vue";
@@ -25,36 +24,38 @@ import {emitter, SHOW_NOTIFICATION} from "@/event-bus.js";
 // Uses
 
 // Refs
+
 const show = ref(false)
 const type = ref('success')
 const message = ref('')
 
 // Props & Emit
-const emit = defineEmits(['close'])
+
+// Computed
 
 // Methods
 
 function close() {
     show.value = false;
     type.value = '';
-    message.value = '';
+    message.value = ''
 }
 
 // Hooks
-
 onMounted(() => {
     let timeout;
     emitter.on(SHOW_NOTIFICATION, ({type: t, message: msg}) => {
-        show.value = true
-        type.value = t
-        message.value = msg
+        show.value = true;
+        type.value = t;
+        message.value = msg;
 
-        if (timeout) clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout)
         timeout = setTimeout(() => {
             close()
         }, 5000)
     })
 })
+
 </script>
 
 <style scoped>

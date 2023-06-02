@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\File;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class StoreFolderRequest extends ParentIdBaseRequest
@@ -12,22 +12,19 @@ class StoreFolderRequest extends ParentIdBaseRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
-        $user = $this->user();
-
-        return array_merge(
-            parent::rules(),
+        return array_merge(parent::rules(),
             [
                 'name' => [
                     'required',
-                    Rule::unique('files', 'name')
-                        ->where('created_by', $user->id)
+                    Rule::unique(File::class, 'name')
+                        ->where('created_by', Auth::id())
                         ->where('parent_id', $this->parent_id)
                         ->whereNull('deleted_at')
-                ],
+                ]
             ]
         );
     }

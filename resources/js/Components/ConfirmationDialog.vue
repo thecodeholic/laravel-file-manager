@@ -1,21 +1,18 @@
 <template>
-    <Modal :show="show" @close="" max-width="md">
-        <div class="p-6">
-            <h2 class="text-2xl mb-2 font-semibold">Please Confirm</h2>
-            <p>{{ message }}</p>
+<Modal :show="show" max-width="md">
+    <div class="p-6">
+        <h2 class="text-2xl mb-2 font-semibold">Please Confirm</h2>
+        <p>{{message}}</p>
 
-            <div class="mt-6 flex justify-end">
-                <SecondaryButton @click="emit('cancel')">Cancel</SecondaryButton>
+        <div class="mt-6 flex justify-end">
+            <SecondaryButton @click="$event => emit('cancel')">Cancel</SecondaryButton>
 
-                <DangerButton
-                    class="ml-3"
-                    @click="emit('confirm')"
-                >
-                    Confirm
-                </DangerButton>
-            </div>
+            <DangerButton class="ml-3" @click="$event => emit('confirm')">
+                Confirm
+            </DangerButton>
         </div>
-    </Modal>
+    </div>
+</Modal>
 </template>
 
 <script setup>
@@ -29,17 +26,18 @@ import DangerButton from "@/Components/DangerButton.vue";
 // Refs
 
 // Props & Emit
-
 const props = defineProps({
     show: Boolean,
     message: String
 })
-
 const emit = defineEmits(['cancel', 'confirm'])
+
+// Computed
 
 // Methods
 
 // Hooks
+
 </script>
 
 <style scoped>
