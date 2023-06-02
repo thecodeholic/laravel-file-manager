@@ -24,22 +24,18 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
-Route::controller(\App\Http\Controllers\FileController::class)->middleware(['auth', 'verified'])
-    ->group(function(){
-       Route::get('/my-files/{folder?}', 'myFiles')
-            ->where('folder', '(.*)')->name('myFiles');
-       Route::get('/shared-with-me', 'sharedWithMe')->name('sharedWithMe');
-       Route::get('/shared-by-me', 'sharedByMe')->name('sharedByMe');
-       Route::get('/trash', 'trash')->name('trash');
 
-       Route::post('/folder-create', 'createFolder')->name('folder.create');
-       Route::post('/file', 'store')->name('file.upload');
-       Route::delete('/file', 'destroy')->name('file.delete');
-       Route::get('/file/download', 'download')->name('file.download');
+Route::controller(\App\Http\Controllers\FileController::class)
+    ->middleware(['auth', 'verified'])
+    ->group(function () {
+        Route::get('/my-files/{folder?}', 'myFiles')
+            ->where('folder', '(.*)')
+            ->name('myFiles');
+        Route::post('/folder/create', 'createFolder')->name('folder.create');
+        Route::post('/file', 'store')->name('file.store');
+        Route::delete('/file', 'destroy')->name('file.delete');
+        Route::get('/file/download', 'download')->name('file.download');
     });
-//Route::get('/dashboard', function () {
-//    return Inertia::render('Dashboard');
-//})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -47,4 +43,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
