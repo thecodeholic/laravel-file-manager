@@ -6,8 +6,10 @@ use App\Http\Requests\FilesActionRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
 use App\Http\Resources\FileResource;
+use App\Jobs\UploadFileToCloudJob;
 use App\Models\File;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -157,10 +159,12 @@ class FileController extends Controller
                     $url = $this->createZip($file->children);
                     $filename = $file->name . '.zip';
                 } else {
-                    $dest = 'public/' . pathinfo($file->storage_path, PATHINFO_BASENAME);
-                    Storage::copy($file->storage_path, $dest);
+                    $dest = pathinfo($file->storage_path, PATHINFO_BASENAME);
+                    $contents = Storage::get($file->storage_path);
+                    Storage::disk('public')->put($dest, $contents);
+//                    Storage::copy($file->storage_path, $dest);
 
-                    $url = asset(Storage::url($dest));
+                    $url = Storage::disk('public')->url($dest);
                     $filename = $file->name;
                 }
             } else {
@@ -185,9 +189,9 @@ class FileController extends Controller
      * @param $parent
      * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
      */
-    private function saveFile($file, $user, $parent): void
+    private function saveFile(UploadedFile $file, $user, $parent): void
     {
-        $path = $file->store('/files/' . $user->id);
+        $path = $file->store('/files/' . $user->id, 'local');
 
         $model = new File();
         $model->storage_path = $path;
@@ -195,8 +199,11 @@ class FileController extends Controller
         $model->name = $file->getClientOriginalName();
         $model->mime = $file->getMimeType();
         $model->size = $file->getSize();
+        $model->uploaded_on_cloud = 0;
 
         $parent->appendNode($model);
+
+        UploadFileToCloudJob::dispatch($model);
     }
 
     public function createZip($files): string
