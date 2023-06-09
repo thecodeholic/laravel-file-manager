@@ -1,5 +1,6 @@
 <template>
     <AuthenticatedLayout>
+<!--        <pre>{{props.folder}}</pre>-->
         <nav class="flex items-center justify-between p-1 mb-3">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li v-for="ans of ancestors.data" :key="ans.id" class="inline-flex items-center">
