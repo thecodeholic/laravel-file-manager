@@ -17,7 +17,12 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return redirect()->route('myFiles');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
 Route::controller(\App\Http\Controllers\FileController::class)
@@ -26,14 +31,13 @@ Route::controller(\App\Http\Controllers\FileController::class)
         Route::get('/my-files/{folder?}', 'myFiles')
             ->where('folder', '(.*)')
             ->name('myFiles');
-
         Route::get('/trash', 'trash')->name('trash');
-
         Route::post('/folder/create', 'createFolder')->name('folder.create');
         Route::post('/file', 'store')->name('file.store');
         Route::delete('/file', 'destroy')->name('file.delete');
         Route::post('/file/restore', 'restore')->name('file.restore');
         Route::delete('/file/delete-forever', 'deleteForever')->name('file.deleteForever');
+        Route::post('/file/add-to-favourites', 'addToFavourites')->name('file.addToFavourites');
         Route::get('/file/download', 'download')->name('file.download');
     });
 

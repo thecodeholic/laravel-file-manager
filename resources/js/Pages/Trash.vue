@@ -1,8 +1,10 @@
 <template>
     <AuthenticatedLayout>
         <nav class="flex items-center justify-end p-1 mb-3">
-            <DeleteForeverButton :all-selected="allSelected" :selected-ids="selectedIds" />
-            <RestoreFilesButton :all-selected="allSelected" :selected-ids="selectedIds" @delete="onDelete" />
+            <div>
+                <DeleteForeverButton :all-selected="allSelected" :selected-ids="selectedIds" @delete="resetForm" />
+                <RestoreFilesButton :all-selected="allSelected" :selected-ids="selectedIds" @restore="resetForm"/>
+            </div>
         </nav>
         <div class="flex-1 overflow-auto">
 
@@ -49,11 +51,16 @@
 
 <script setup>
 // Imports
+import {HomeIcon} from '@heroicons/vue/20/solid'
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import {router} from "@inertiajs/vue3";
+import {Link} from '@inertiajs/vue3'
 import FileIcon from "@/Components/app/FileIcon.vue";
 import {computed, onMounted, onUpdated, ref} from "vue";
 import {httpGet} from "@/Helper/http-helper.js";
 import Checkbox from "@/Components/Checkbox.vue";
+import DeleteFilesButton from "@/Components/app/DeleteFilesButton.vue";
+import DownloadFilesButton from "@/Components/app/DownloadFilesButton.vue";
 import RestoreFilesButton from "@/Components/app/RestoreFilesButton.vue";
 import DeleteForeverButton from "@/Components/app/DeleteForeverButton.vue";
 
@@ -73,6 +80,7 @@ const allFiles = ref({
 const props = defineProps({
     files: Object,
     folder: Object,
+    ancestors: Object
 })
 
 // Computed
@@ -123,14 +131,13 @@ function onSelectCheckboxChange(file){
     }
 }
 
-function onDelete(){
+function resetForm(){
     allSelected.value = false
     selected.value = {}
 }
 
 // Hooks
 onUpdated(() => {
-    console.log("111");
     allFiles.value = {
         data: props.files.data,
         next: props.files.links.next

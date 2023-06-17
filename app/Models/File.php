@@ -7,18 +7,16 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Kalnoy\Nestedset\NodeTrait;
 
 class File extends Model
 {
-    use HasFactory, HasCreatorAndUpdater, NodeTrait, SoftDeletes, Prunable;
+    use HasFactory, HasCreatorAndUpdater, NodeTrait, SoftDeletes;
 
     public function user(): BelongsTo
     {
@@ -28,6 +26,12 @@ class File extends Model
     public function parent(): BelongsTo
     {
         return $this->belongsTo(File::class, 'parent_id');
+    }
+
+    public function starred()
+    {
+        return $this->hasOne(StarredFile::class, 'file_id', 'id')
+            ->where('user_id', Auth::id());
     }
 
     public function owner(): Attribute
@@ -68,9 +72,15 @@ class File extends Model
             }
             $model->path = ( !$model->parent->isRoot() ? $model->parent->path . '/' : '' ) . Str::slug($model->name);
         });
+
+//        static::deleted(function(File $model) {
+//            if (!$model->is_folder) {
+//                Storage::delete($model->storage_path);
+//            }
+//        });
     }
 
-    public function moveToTrash(): bool
+    public function moveToTrash()
     {
         $this->deleted_at = Carbon::now();
 
@@ -83,16 +93,14 @@ class File extends Model
         $this->forceDelete();
     }
 
-    private static function deleteFilesFromStorage($files)
+    public function deleteFilesFromStorage($files)
     {
         foreach ($files as $file) {
             if ($file->is_folder) {
-                self::deleteFilesFromStorage($file->children);
+                $this->deleteFilesFromStorage($file->children);
             } else {
-                Log::error("Deleting file from storage " . $file->storagePath);
                 Storage::delete($file->storage_path);
             }
         }
     }
-
 }

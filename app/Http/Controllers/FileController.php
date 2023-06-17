@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddToFavouritesRequest;
 use App\Http\Requests\FilesActionRequest;
-use App\Http\Requests\TrashFilesRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
+use App\Http\Requests\TrashFilesRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
+use App\Models\StarredFile;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -19,19 +22,31 @@ class FileController extends Controller
     public function myFiles(Request $request, string $folder = null)
     {
         if ($folder) {
-            $folder = File::query()->where('created_by', Auth::id())
+            $folder = File::query()
+                ->where('created_by', Auth::id())
                 ->where('path', $folder)
                 ->firstOrFail();
         }
         if (!$folder) {
             $folder = $this->getRoot();
         }
-        $files = File::query()
+
+        $favourites = (int)$request->get('favourites');
+
+        $query = File::query()
+            ->select('files.*')
+            ->with('starred')
             ->where('parent_id', $folder->id)
             ->where('created_by', Auth::id())
             ->orderBy('is_folder', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('files.created_at', 'desc')
+            ->orderBy('files.id', 'desc');
+        if ($favourites === 1) {
+            $query->join('starred_files', 'starred_files.file_id', '=', 'files.id')
+                ->where('starred_files.user_id', Auth::id());
+        }
+
+        $files = $query->paginate(10);
 
         $files = FileResource::collection($files);
 
@@ -46,17 +61,21 @@ class FileController extends Controller
         return Inertia::render('MyFiles', compact('files', 'folder', 'ancestors'));
     }
 
-    public function trash()
+    public function trash(Request $request)
     {
         $files = File::onlyTrashed()
             ->where('created_by', Auth::id())
             ->orderBy('is_folder', 'desc')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('deleted_at', 'desc')
             ->paginate(10);
 
         $files = FileResource::collection($files);
 
-        return Inertia::render('Trash', compact('files', ));
+        if ($request->wantsJson()) {
+            return $files;
+        }
+
+        return Inertia::render('Trash', compact('files'));
     }
 
     public function createFolder(StoreFolderRequest $request)
@@ -140,50 +159,6 @@ class FileController extends Controller
         }
 
         return to_route('myFiles', ['folder' => $parent->path]);
-    }
-
-    public function restore(TrashFilesRequest $request)
-    {
-        $data = $request->validated();
-
-        if ($data['all']) {
-            $children = File::onlyTrashed()->get();
-
-            foreach ($children as $child) {
-                $child->restore();
-            }
-        } else {
-            foreach ($data['ids'] ?? [] as $id) {
-                $file = File::onlyTrashed()->where('id', $id);
-                if ($file) {
-                    $file->restore();
-                }
-            }
-        }
-
-        return to_route('trash');
-    }
-
-    public function deleteForever(TrashFilesRequest $request)
-    {
-        $data = $request->validated();
-
-        if ($data['all']) {
-            $children = File::onlyTrashed()->get();
-
-            foreach ($children as $child) {
-                $child->deleteForever();
-            }
-        } else {
-            foreach ($data['ids'] ?? [] as $id) {
-                $file = File::onlyTrashed()->where('id', $id)->first();
-                if ($file) {
-                    $file->deleteForever();
-                }
-            }
-        }
-
-        return to_route('trash');
     }
 
     public function download(FilesActionRequest $request)
@@ -288,5 +263,70 @@ class FileController extends Controller
                 $zip->addFile(Storage::path($file->storage_path), $ancestors . $file->name);
             }
         }
+    }
+
+    public function restore(TrashFilesRequest $request)
+    {
+        $data = $request->validated();
+        if ($data['all']) {
+            $children = File::onlyTrashed()->get();
+            foreach ($children as $child) {
+                $child->restore();
+            }
+        } else {
+            $ids = $data['ids'] ?? [];
+            $children = File::onlyTrashed()->whereIn('id', $ids)->get();
+            foreach ($children as $child) {
+                $child->restore();
+            }
+        }
+
+        return to_route('trash');
+    }
+
+    public function deleteForever(TrashFilesRequest $request)
+    {
+        $data = $request->validated();
+        if ($data['all']) {
+            $children = File::onlyTrashed()->get();
+            foreach ($children as $child) {
+                $child->deleteForever();
+            }
+        } else {
+            $ids = $data['ids'] ?? [];
+            $children = File::onlyTrashed()->whereIn('id', $ids)->get();
+            foreach ($children as $child) {
+                $child->deleteForever();
+            }
+        }
+
+        return to_route('trash');
+    }
+
+    public function addToFavourites(AddToFavouritesRequest $request)
+    {
+        $data = $request->validated();
+
+        $id = $data['id'];
+        $file = File::find($id);
+        $user_id = Auth::id();
+
+        $starredFile = StarredFile::query()
+            ->where('file_id', $file->id)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if ($starredFile) {
+            $starredFile->delete();
+        } else {
+            StarredFile::create([
+                'file_id' => $file->id,
+                'user_id' => $user_id,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+
+        return redirect()->back();
     }
 }
