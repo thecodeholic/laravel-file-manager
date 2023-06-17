@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasCreatorAndUpdater;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,12 @@ class File extends Model
     public function parent(): BelongsTo
     {
         return $this->belongsTo(File::class, 'parent_id');
+    }
+
+    public function starred()
+    {
+        return $this->hasOne(StarredFile::class, 'file_id', 'id')
+            ->where('user_id', Auth::id());
     }
 
     public function owner(): Attribute
@@ -52,7 +59,7 @@ class File extends Model
 
         $power = $this->size > 0 ? floor(log($this->size, 1024)) : 0;
 
-        return number_format($this->size / pow(1024, $power), 2, '.', ','). ' ' . $units[$power];
+        return number_format($this->size / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
     }
 
     protected static function boot()
@@ -71,5 +78,50 @@ class File extends Model
 //                Storage::delete($model->storage_path);
 //            }
 //        });
+    }
+
+    public function moveToTrash()
+    {
+        $this->deleted_at = Carbon::now();
+
+        return $this->save();
+    }
+
+    public function deleteForever()
+    {
+        $this->deleteFilesFromStorage([$this]);
+        $this->forceDelete();
+    }
+
+    public function deleteFilesFromStorage($files)
+    {
+        foreach ($files as $file) {
+            if ($file->is_folder) {
+                $this->deleteFilesFromStorage($file->children);
+            } else {
+                Storage::delete($file->storage_path);
+            }
+        }
+    }
+
+    public static function getSharedWithMe()
+    {
+        return File::query()
+            ->select('files.*')
+            ->join('file_shares', 'file_shares.file_id', 'files.id')
+            ->where('file_shares.user_id', Auth::id())
+            ->orderBy('file_shares.created_at', 'desc')
+            ->orderBy('files.id', 'desc');
+    }
+
+    public static function getSharedByMe()
+    {
+        return File::query()
+            ->select('files.*')
+            ->join('file_shares', 'file_shares.file_id', 'files.id')
+            ->where('files.created_by', Auth::id())
+            ->orderBy('file_shares.created_at', 'desc')
+            ->orderBy('files.id', 'desc')
+            ;
     }
 }

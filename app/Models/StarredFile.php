@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class StarredFile extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'file_id',
+        'user_id',
+        'created_at',
+        'updated_at',
+    ];
 }
