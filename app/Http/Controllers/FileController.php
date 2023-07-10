@@ -17,7 +17,6 @@ use App\Models\StarredFile;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -259,7 +258,7 @@ class FileController extends Controller
      * @param $parent
      * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
      */
-    private function saveFile(UploadedFile $file, $user, $parent): void
+    private function saveFile($file, $user, $parent): void
     {
         $path = $file->store('/files/' . $user->id, 'local');
 
@@ -279,13 +278,13 @@ class FileController extends Controller
     public function createZip($files): string
     {
         $zipPath = 'zip/' . Str::random() . '.zip';
-        $publicPath = "public/$zipPath";
+        $publicPath = "$zipPath";
 
         if (!is_dir(dirname($publicPath))) {
-            Storage::makeDirectory(dirname($publicPath));
+            Storage::disk('public')->makeDirectory(dirname($publicPath));
         }
 
-        $zipFile = Storage::path($publicPath);
+        $zipFile = Storage::disk('public')->path($publicPath);
 
         $zip = new \ZipArchive();
 
@@ -295,7 +294,7 @@ class FileController extends Controller
 
         $zip->close();
 
-        return asset(Storage::url($zipPath));
+        return asset(Storage::disk('local')->url($zipPath));
     }
 
     private function addFilesToZip($zip, $files, $ancestors = '')
@@ -304,7 +303,15 @@ class FileController extends Controller
             if ($file->is_folder) {
                 $this->addFilesToZip($zip, $file->children, $ancestors . $file->name . '/');
             } else {
-                $zip->addFile(Storage::path($file->storage_path), $ancestors . $file->name);
+                $localPath = Storage::disk('local')->path($file->storage_path);
+                if ($file->uploaded_on_cloud == 1) {
+                    $dest = pathinfo($file->storage_path, PATHINFO_BASENAME);
+                    $content = Storage::get($file->storage_path);
+                    Storage::disk('public')->put($dest, $content);
+                    $localPath = Storage::disk('public')->path($dest);
+                }
+
+                $zip->addFile($localPath, $ancestors . $file->name);
             }
         }
     }
@@ -497,11 +504,14 @@ class FileController extends Controller
                 $filename = $file->name . '.zip';
             } else {
                 $dest = pathinfo($file->storage_path, PATHINFO_BASENAME);
-                $contents = Storage::get($file->storage_path);
-                Storage::disk('public')->put($dest, $contents);
-//                    Storage::copy($file->storage_path, $dest);
+                if ($file->uploaded_on_cloud) {
+                    $content = Storage::get($file->storage_path);
+                } else {
+                    $content = Storage::disk('local')->get($file->storage_path);
+                }
 
-                $url = Storage::disk('public')->url($dest);
+                Storage::disk('public')->put($dest, $content);
+                $url = asset(Storage::disk('public')->url($dest));
                 $filename = $file->name;
             }
         } else {
