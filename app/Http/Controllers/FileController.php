@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -510,8 +511,12 @@ class FileController extends Controller
                     $content = Storage::disk('local')->get($file->storage_path);
                 }
 
-                Storage::disk('public')->put($dest, $content);
+                Log::debug("Getting file content. File:  " .$file->storage_path).". Content: " .  intval($content);
+
+                $success = Storage::disk('public')->put($dest, $content);
+                Log::debug('Inserted in public disk. "' . $dest . '". Success: ' . intval($success));
                 $url = asset(Storage::disk('public')->url($dest));
+                Log::debug("Logging URL " . $url);
                 $filename = $file->name;
             }
         } else {
